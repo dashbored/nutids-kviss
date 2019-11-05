@@ -14,5 +14,9 @@ namespace DNWebScraper
         {
 
         }
+        public Question()
+        {
+
+        }
     }
 }

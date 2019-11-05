@@ -3,6 +3,7 @@ using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -34,18 +35,21 @@ namespace DNWebScraper
 
         private WebContent GetScrapeResults(IHtmlDocument document)
         {
-            var content = new WebContent(10);
+            List<IElement> questionsHtml = document.All.Where(x => x.Id != null && x.Id.StartsWith("quiz-question-")).ToList();
 
-            //foreach (var term in QueryTerms)
-            //{
-            //    articleLink = document.All.Where(x => x.ClassName == "views-field views-field-nothing" && (x.ParentElement.InnerHtml.Contains(term) || x.ParentElement.InnerHtml.Contains(term.ToLower())));
-            //}
+            var alternatives = questionsHtml.Select(x => GetAlternatives(x)).ToArray();
+            Question[] questions = questionsHtml.Select(x => new Question() {
+                Title = x.InnerHtml
+            }).ToArray();
+            //var content = new WebContent(questionsHtml.Count);
 
-            //if (articleLink.Any())
-            //{
-            //    // Print Results: See Next Step
-            //}
-            return content;
+            return default;
         }
+
+        public IEnumerator<string[]> GetAlternatives(IElement x)
+        {
+            yield return new string[0];
+        }
+
     }
 }
