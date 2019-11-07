@@ -36,10 +36,19 @@ namespace DNWebScraper
         private WebContent GetScrapeResults(IHtmlDocument document)
         {
             List<IElement> questionsHtml = document.All.Where(x => x.Id != null && x.Id.StartsWith("quiz-question-")).ToList();
-            List<INode> questionForm = questionsHtml.Select(x => x.Parent).ToList();
-            //var alternatives = questionForm.Select(x => x.Children().Where(y => true)).ToDictionary(t => true);
-            Question[] questions = questionsHtml.Select(x => new Question() {
-                Title = x.InnerHtml
+            List<IElement> questionForm = questionsHtml.Select(x => x.ParentElement).ToList();
+
+            List<string> correctAnswers = document.All.Where(x => x.HasAttribute("data-question-number"))
+                                                        .Select(x => x.Children.First(y => y.LocalName.Equals("div")))
+                                                        .Select(x => x.Children.First(y => y.ClassList.Length == 0))
+                                                        .Select(x => x.TextContent)
+                                                        .Select(x => x.Substring(x.IndexOf("Rätt svar:") + 10))
+                                                        .Select(x => x.Substring(0, x.IndexOf("\n"))).ToList();
+            var alternatives = questionForm.Select(x => x.Children.Where(y => y.LocalName.Equals("label")).ToList()).ToList();
+
+            Question[] questions = questionsHtml.Zip(alternatives, (x, y) => new Question() {
+                Title = x.InnerHtml,
+                Alternatives = y.Select(z => z.InnerHtml).ToArray()
             }).ToArray();
             var content = new WebContent(questions);
 
