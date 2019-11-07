@@ -36,14 +36,14 @@ namespace DNWebScraper
         private WebContent GetScrapeResults(IHtmlDocument document)
         {
             List<IElement> questionsHtml = document.All.Where(x => x.Id != null && x.Id.StartsWith("quiz-question-")).ToList();
-
-            var alternatives = questionsHtml.Select(x => GetAlternatives(x)).ToArray();
+            List<INode> questionForm = questionsHtml.Select(x => x.Parent).ToList();
+            //var alternatives = questionForm.Select(x => x.Children().Where(y => true)).ToDictionary(t => true);
             Question[] questions = questionsHtml.Select(x => new Question() {
                 Title = x.InnerHtml
             }).ToArray();
-            //var content = new WebContent(questionsHtml.Count);
+            var content = new WebContent(questions);
 
-            return default;
+            return content;
         }
 
         public IEnumerator<string[]> GetAlternatives(IElement x)

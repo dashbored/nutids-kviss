@@ -12,5 +12,10 @@ namespace DNWebScraper
         {
             Questions = new Question[questions];
         }
+
+        public WebContent(Question[] questions)
+        {
+            Questions = questions;
+        }
     }
 }
