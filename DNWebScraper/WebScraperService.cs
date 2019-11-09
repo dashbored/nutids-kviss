@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DNWebScraper
 {
-    public class WebScraper
+    public class WebScraperService
     {
         private string Title { get; set; }
         private string URL { get; set; }
@@ -35,30 +35,36 @@ namespace DNWebScraper
 
         private WebContent GetScrapeResults(IHtmlDocument document)
         {
-            List<IElement> questionsHtml = document.All.Where(x => x.Id != null && x.Id.StartsWith("quiz-question-")).ToList();
-            List<IElement> questionForm = questionsHtml.Select(x => x.ParentElement).ToList();
+            var questionsHtml = document.All.Where(x => x.Id != null && x.Id.StartsWith("quiz-question-")).ToList();
+            var questionForm = questionsHtml.Select(x => x.ParentElement).ToList();
+            var alternatives = questionForm.Select(x => x.Children.Where(y => y.LocalName.Equals("label"))
+                                                                  .Select(y => y.InnerHtml)
+                                                                  .Select(y => y.Substring(y.IndexOf("<span>") + 6))
+                                                                  .Select(y => y.Substring(0, y.IndexOf("</span>")))
+                                                                  .ToArray()).ToList();
 
-            List<string> correctAnswers = document.All.Where(x => x.HasAttribute("data-question-number"))
+            var correctAnswers = document.All.Where(x => x.HasAttribute("data-question-number"))
                                                         .Select(x => x.Children.First(y => y.LocalName.Equals("div")))
                                                         .Select(x => x.Children.First(y => y.ClassList.Length == 0))
                                                         .Select(x => x.TextContent)
                                                         .Select(x => x.Substring(x.IndexOf("Rätt svar:") + 10))
                                                         .Select(x => x.Substring(0, x.IndexOf("\n"))).ToList();
-            var alternatives = questionForm.Select(x => x.Children.Where(y => y.LocalName.Equals("label")).ToList()).ToList();
 
             Question[] questions = questionsHtml.Zip(alternatives, (x, y) => new Question() {
                 Title = x.InnerHtml,
-                Alternatives = y.Select(z => z.InnerHtml).ToArray()
+                Alternatives = y
             }).ToArray();
+
+            questions = questions.Zip(correctAnswers, (x, y) => new Question()
+            {
+                Title = x.Title,
+                Alternatives = x.Alternatives,
+                CorrectAlternative = y
+            }).ToArray();
+
             var content = new WebContent(questions);
 
             return content;
         }
-
-        public IEnumerator<string[]> GetAlternatives(IElement x)
-        {
-            yield return new string[0];
-        }
-
     }
 }
