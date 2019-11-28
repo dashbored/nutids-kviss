@@ -1,0 +1,79 @@
+﻿@page "/nutidstest"
+
+@using DNWebScraper
+@inject WebScraperService WebScraperService
+
+<h3>Nutidstest</h3>
+
+@if (content == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <tbody>
+            @foreach (var question in content.Questions)
+            {
+                IncrementQuestionNumber();
+                <tr>
+                    <div class="form-group">
+                        <span>@(questionNumber): </span><label>@((MarkupString)question.Title)</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[0]">
+                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
+                                @question.Alternatives[0]
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[1]">
+                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
+                                @question.Alternatives[1]
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[2]">
+                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
+                                @question.Alternatives[2]
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[3]">
+                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
+                                @question.Alternatives[3]
+                            </label>
+                        </div>
+                    </div>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    WebContent content;
+    int questionNumber = 0;
+    int alternativeNumber = 0;
+
+    private void IncrementQuestionNumber()
+    {
+        questionNumber++;
+    }
+
+    private int IncrementAlternative()
+    {
+        if (alternativeNumber == 4)
+        {
+            alternativeNumber = 1;
+        } else
+        {
+            alternativeNumber++;
+        }
+
+        return alternativeNumber;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        content = await WebScraperService.ScrapeWebsite("https://www.dn.se/nyheter/nutidstestet/nutidstestet-vecka-44-6/");
+    }
+}

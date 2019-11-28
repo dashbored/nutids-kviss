@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29409.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NutidsKviss", "NutidsKviss\NutidsKviss.csproj", "{324E3EF4-A63B-4B0B-A106-97586021E98C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNWebScraper", "DNWebScraper\DNWebScraper.csproj", "{7E932C29-7AE7-4EFA-8D46-7601FE1BBADA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DNWebScraper", "DNWebScraper\DNWebScraper.csproj", "{7E932C29-7AE7-4EFA-8D46-7601FE1BBADA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{677D3455-726B-495F-938D-097206BF84EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{677D3455-726B-495F-938D-097206BF84EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
