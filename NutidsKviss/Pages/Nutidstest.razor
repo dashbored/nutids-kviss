@@ -1,6 +1,8 @@
 ﻿@page "/nutidstest"
 
+@using DNWebScraper.Services
 @using DNWebScraper
+@using DNWebScraper.Models
 @inject WebScraperService WebScraperService
 
 <h3>Nutidstest</h3>
@@ -9,71 +11,106 @@
 {
     <p><em>Loading...</em></p>
 }
+else if (testSubmitted)
+{
+    <p>Du hade @correctAnswers av 10 rätt.</p>
+}
 else
 {
-    <table class="table">
-        <tbody>
-            @foreach (var question in content.Questions)
-            {
-                IncrementQuestionNumber();
-                <tr>
-                    <div class="form-group">
-                        <span>@(questionNumber): </span><label>@((MarkupString)question.Title)</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[0]">
-                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
-                                @question.Alternatives[0]
-                            </label>
+    {
+        <table class="table">
+            <tbody>
+                @foreach (var question in content.Questions)
+                {
+                    <tr>
+                        <div class="form-group">
+                            <span>@(question.QuestionNumber): </span><label>@((MarkupString)question.Title)</label>
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="radio" 
+                                       name="question@(question.QuestionNumber)" 
+                                       id="q@(question.QuestionNumber)a1" 
+                                       value="@question.Alternatives[0]" 
+                                       checked="@(checkedRadios[question.QuestionNumber - 1] == 1)" 
+                                       @onchange="@(e => SetValue(question.QuestionNumber, 1))"/>
+                                <label class="form-check-label" for="q@(question.QuestionNumber)a1">
+                                    @question.Alternatives[0]
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="radio" 
+                                       name="question@(question.QuestionNumber)" 
+                                       id="q@(question.QuestionNumber)a2" 
+                                       value="@question.Alternatives[1]"
+                                       checked="@(checkedRadios[question.QuestionNumber - 1] == 2)" 
+                                       @onchange="@(e => SetValue(question.QuestionNumber, 2))"/>
+                                <label class="form-check-label" for="q@(question.QuestionNumber)a2">
+                                    @question.Alternatives[1]
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="radio" 
+                                       name="question@(question.QuestionNumber)" 
+                                       id="q@(question.QuestionNumber)a3" 
+                                       value="@question.Alternatives[2]"
+                                       checked="@(checkedRadios[question.QuestionNumber - 1] == 3)" 
+                                       @onchange="@(e => SetValue(question.QuestionNumber, 3))"/>
+                                <label class="form-check-label" for="q@(question.QuestionNumber)a3">
+                                    @question.Alternatives[2]
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="radio" 
+                                       name="question@(question.QuestionNumber)" 
+                                       id="q@(question.QuestionNumber)a4" 
+                                       value="@question.Alternatives[3]" 
+                                       checked="@(checkedRadios[question.QuestionNumber - 1] == 4)" 
+                                       @onchange="@(e => SetValue(question.QuestionNumber, 4))"/>
+                                <label class="form-check-label" for="q@(question.QuestionNumber)a4">
+                                    @question.Alternatives[3]
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[1]">
-                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
-                                @question.Alternatives[1]
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[2]">
-                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
-                                @question.Alternatives[2]
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="exampleRadios" id="q@(questionNumber)a@(IncrementAlternative())" value="@question.Alternatives[3]">
-                            <label class="form-check-label" for="q@(questionNumber)a@(alternativeNumber)">
-                                @question.Alternatives[3]
-                            </label>
-                        </div>
-                    </div>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary" @onclick="ShowResults">Visa resultat</button>
+    }
 }
 
-@code {
+@code
+{
     WebContent content;
-    int questionNumber = 0;
-    int alternativeNumber = 0;
+    Questionnaire questionnaire = new Questionnaire();
+    bool testSubmitted = false;
+    int correctAnswers = 0;
+    int[] checkedRadios = new int[10];
+    string[] submittedAnswers = new string[10];
 
-    private void IncrementQuestionNumber()
-    {
-        questionNumber++;
-    }
-
-    private int IncrementAlternative()
-    {
-        if (alternativeNumber == 4)
-        {
-            alternativeNumber = 1;
-        } else
-        {
-            alternativeNumber++;
-        }
-
-        return alternativeNumber;
-    }
     protected override async Task OnInitializedAsync()
     {
         content = await WebScraperService.ScrapeWebsite("https://www.dn.se/nyheter/nutidstestet/nutidstestet-vecka-44-6/");
+    }
+
+    private void ShowResults()
+    {
+        for (int i = 0; i < content.Questions.Length; i++)
+        {
+            if (content.Questions[i].CorrectAlternative == submittedAnswers[i])
+            {
+                correctAnswers++;
+            }
+        }
+        testSubmitted = true;
+    }
+
+    private void SetValue(int qNr, int a)
+    {
+        checkedRadios[qNr - 1] = a;
+        submittedAnswers[qNr - 1] = content.Questions[qNr - 1].Alternatives[a - 1];
     }
 }

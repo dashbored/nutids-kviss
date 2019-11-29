@@ -9,8 +9,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using DNWebScraper.Models;
 
-namespace DNWebScraper
+namespace DNWebScraper.Services
 {
     public class WebScraperService
     {
@@ -29,14 +30,16 @@ namespace DNWebScraper
             cancellationToken.Token.ThrowIfCancellationRequested();
 
             HtmlParser parser = new HtmlParser();
-            var doc =  parser.ParseDocument(response);
+            var doc = parser.ParseDocument(response);
             return GetScrapeResults(doc);
         }
 
         private WebContent GetScrapeResults(IHtmlDocument document)
         {
             var questionsHtml = document.All.Where(x => x.Id != null && x.Id.StartsWith("quiz-question-")).ToList();
+
             var questionForm = questionsHtml.Select(x => x.ParentElement).ToList();
+
             var alternatives = questionForm.Select(x => x.Children.Where(y => y.LocalName.Equals("label"))
                                                                   .Select(y => y.InnerHtml)
                                                                   .Select(y => y.Substring(y.IndexOf("<span>") + 6))
@@ -47,20 +50,28 @@ namespace DNWebScraper
                                                         .Select(x => x.Children.First(y => y.LocalName.Equals("div")))
                                                         .Select(x => x.Children.First(y => y.ClassList.Length == 0))
                                                         .Select(x => x.TextContent)
-                                                        .Select(x => x.Substring(x.IndexOf("Rätt svar:") + 10))
+                                                        .Select(x => x.Substring(x.IndexOf("Rätt svar:") + 11))
                                                         .Select(x => x.Substring(0, x.IndexOf("\n"))).ToList();
+            
+            Question[] questions = questionsHtml.
+                Zip(alternatives, (x, y) => new Question()
+                {
+                    Title = x.InnerHtml,
+                    Alternatives = y
+                }).ToArray();
 
-            Question[] questions = questionsHtml.Zip(alternatives, (x, y) => new Question() {
-                Title = x.InnerHtml,
-                Alternatives = y
-            }).ToArray();
-
-            questions = questions.Zip(correctAnswers, (x, y) => new Question()
+            for (int i = 0; i < questions.Length; i++)
             {
-                Title = x.Title,
-                Alternatives = x.Alternatives,
-                CorrectAlternative = y
-            }).ToArray();
+                questions[i].QuestionNumber = i + 1;
+                questions[i].CorrectAlternative = correctAnswers[i];
+            }
+
+            //questions = questions.Zip(correctAnswers, (x, y) => new Question()
+            //{
+            //    Title = x.Title,
+            //    Alternatives = x.Alternatives,
+            //    CorrectAlternative = y
+            //}).ToArray();
 
             var content = new WebContent(questions);
 
