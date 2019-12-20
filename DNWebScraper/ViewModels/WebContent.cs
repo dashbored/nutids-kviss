@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using DNWebScraper.Models;
 
-namespace DNWebScraper
+namespace DNWebScraper.ViewModels
 {
     public class WebContent
     {

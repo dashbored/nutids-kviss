@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DNWebScraper.Models;
+using DNWebScraper.ViewModels;
 
 namespace DNWebScraper.Services
 {
@@ -17,19 +18,18 @@ namespace DNWebScraper.Services
     {
         private string Title { get; set; }
         private string URL { get; set; }
-        //private string siteUrl = "https://www.dn.se/nyheter/nutidstestet/nutidstestet-vecka-44-6/";
 
         public async Task<WebContent> ScrapeWebsite(string siteUrl)
         {
-            CancellationTokenSource cancellationToken = new CancellationTokenSource();
-            HttpClient httpClient = new HttpClient();
-            HttpResponseMessage request = await httpClient.GetAsync(siteUrl);
+            var cancellationToken = new CancellationTokenSource();
+            var httpClient = new HttpClient();
+            var request = await httpClient.GetAsync(siteUrl, cancellationToken.Token);
             cancellationToken.Token.ThrowIfCancellationRequested();
 
-            Stream response = await request.Content.ReadAsStreamAsync();
+            var response = await request.Content.ReadAsStreamAsync();
             cancellationToken.Token.ThrowIfCancellationRequested();
 
-            HtmlParser parser = new HtmlParser();
+            var parser = new HtmlParser();
             var doc = parser.ParseDocument(response);
             return GetScrapeResults(doc);
         }
@@ -65,14 +65,6 @@ namespace DNWebScraper.Services
                 questions[i].QuestionNumber = i + 1;
                 questions[i].CorrectAlternative = correctAnswers[i];
             }
-
-            //questions = questions.Zip(correctAnswers, (x, y) => new Question()
-            //{
-            //    Title = x.Title,
-            //    Alternatives = x.Alternatives,
-            //    CorrectAlternative = y
-            //}).ToArray();
-
             var content = new WebContent(questions);
 
             return content;
